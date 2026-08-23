@@ -10,6 +10,7 @@ performance/
 ├── docs/          # 테스트 계획과 최종 보고서
 ├── lib/           # k6 공통 설정·인증·검증 코드
 ├── monitoring/    # Prometheus·Grafana 구성
+├── optimization/  # 인덱스 적용·롤백·EXPLAIN SQL
 ├── results/       # k6 원본 JSON, Git 제외
 ├── scenarios/     # k6 실행 시나리오
 ├── scripts/       # 환경 점검과 Smoke 실행 도우미
@@ -79,6 +80,12 @@ SOURCE performance/seed/sql/run-payments-reports-actions.sql;
 ```
 
 각 runner는 초기화, 데이터 생성, 검증을 순서대로 실행한다. 상세 준비 과정과 fixture ID는 `seed/README.md`에서 확인한다.
+
+쿼리 최적화 적용 후 결과를 측정할 때만 인덱스 스크립트를 추가 실행한다.
+
+```sql
+SOURCE performance/optimization/sql/01-add-query-indexes.sql;
+```
 
 ## 4. 애플리케이션 실행
 
@@ -199,3 +206,5 @@ admin-report-status
 - 최종 결과와 개선 제안: `docs/final-report.md`
 - seed 상세: `seed/README.md`
 - 모니터링 상세: `monitoring/README.md`
+- 쿼리·인덱스 최적화 결과: `docs/query-optimization-report.md`
+- 관리자 목록 커서 페이지네이션: `docs/admin-keyset-pagination.md`

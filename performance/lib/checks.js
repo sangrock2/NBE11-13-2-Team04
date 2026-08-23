@@ -53,6 +53,25 @@ export function expectPage(response, label = 'page response') {
     return body;
 }
 
+export function expectCursorPage(response, label = 'cursor page response') {
+    const body = expectJson(response, label);
+
+    check(body, {
+        [`${label}: content is an array`]: (currentBody) => Array.isArray(currentBody?.content),
+        [`${label}: nextCursor is nullable string`]: (currentBody) =>
+            currentBody?.nextCursor === null || typeof currentBody?.nextCursor === 'string',
+        [`${label}: hasNext is a boolean`]: (currentBody) =>
+            typeof currentBody?.hasNext === 'boolean',
+        [`${label}: size is a positive number`]: (currentBody) =>
+            Number.isInteger(currentBody?.size) && currentBody.size > 0,
+        [`${label}: hasNext requires nextCursor`]: (currentBody) =>
+            currentBody?.hasNext !== true
+            || (typeof currentBody?.nextCursor === 'string' && currentBody.nextCursor.length > 0),
+    });
+
+    return body;
+}
+
 export function expectAccessToken(response, label = 'login') {
     expectStatus(response, 200, label);
     const body = expectJson(response, label);

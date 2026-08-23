@@ -5,6 +5,7 @@ import { apiUrl, config, requireEnv } from '../lib/config.js';
 import {
     expectAccessToken,
     expectCondition,
+    expectCursorPage,
     expectJson,
     expectPage,
     expectStatus,
@@ -286,6 +287,18 @@ function runRentalPage(path, name, accessToken) {
     expectPage(response, name);
 }
 
+function runAdminCursorPage(path, name, accessToken) {
+    const response = http.get(
+        apiUrl(path, {
+            cursor: __ENV.ADMIN_CURSOR || null,
+            size: config.paging.size,
+        }),
+        readParams(accessToken, name),
+    );
+    expectStatus(response, 200, name);
+    expectCursorPage(response, name);
+}
+
 function runRentalDetail(accessToken) {
     const response = http.get(
         apiUrl(`/api/v1/rentals/${config.ids.rentalId}`),
@@ -326,15 +339,11 @@ function runReportDetail(accessToken) {
 }
 
 function runAdminPayments(accessToken) {
-    const response = http.get(
-        apiUrl('/api/v1/admin/payments', {
-            page: config.paging.page,
-            size: config.paging.size,
-        }),
-        readParams(accessToken, 'GET /api/v1/admin/payments'),
+    runAdminCursorPage(
+        '/api/v1/admin/payments',
+        'GET /api/v1/admin/payments',
+        accessToken,
     );
-    expectStatus(response, 200, 'admin payment list');
-    expectPage(response, 'admin payment list');
 }
 
 function runAdminPaymentDetail(accessToken) {
@@ -467,28 +476,28 @@ export default function (data) {
             runReportDetail(data.userToken);
             break;
         case 'admin-users':
-            runRentalPage(
+            runAdminCursorPage(
                 '/api/v1/admin/users',
                 'GET /api/v1/admin/users',
                 data.adminToken,
             );
             break;
         case 'admin-equipment':
-            runRentalPage(
+            runAdminCursorPage(
                 '/api/v1/admin/equipment',
                 'GET /api/v1/admin/equipment',
                 data.adminToken,
             );
             break;
         case 'admin-reports':
-            runRentalPage(
+            runAdminCursorPage(
                 '/api/v1/admin/reports',
                 'GET /api/v1/admin/reports',
                 data.adminToken,
             );
             break;
         case 'admin-actions':
-            runRentalPage(
+            runAdminCursorPage(
                 '/api/v1/admin/actions',
                 'GET /api/v1/admin/actions',
                 data.adminToken,

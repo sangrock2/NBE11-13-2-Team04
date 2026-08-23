@@ -4,7 +4,7 @@ import { Counter } from 'k6/metrics';
 
 import { apiUrl, config, requireEnv } from '../lib/config.js';
 import { authorizationHeaders, login, resolveAccessToken } from '../lib/auth.js';
-import { expectPage, expectStatus } from '../lib/checks.js';
+import { expectCursorPage, expectPage, expectStatus } from '../lib/checks.js';
 
 const allowDestructiveWrites = String(__ENV.ALLOW_DESTRUCTIVE_WRITES || '').toLowerCase() === 'true';
 const writePercent = Math.max(0, Math.min(100, Number(__ENV.WRITE_PERCENT || 5)));
@@ -274,6 +274,18 @@ function recordExact(response, status, label, pageExpected) {
     return true;
 }
 
+function recordCursorPage(response, status, label) {
+    expectStatus(response, status, label);
+    if (response.status === status) {
+        expectCursorPage(response, label);
+    }
+    if (response.status !== status) {
+        unexpectedResponses.add(1, { endpoint: label, status: String(response.status) });
+        return false;
+    }
+    return true;
+}
+
 export function recordMutation(response, successStatuses, label) {
     if (successStatuses.includes(response.status)) {
         successfulMutations.add(1, { endpoint: label, status: String(response.status) });
@@ -483,42 +495,42 @@ function readOperations(data) {
 
     addOperation(operations, 2, 'admin-users', Boolean(data.adminToken), () => {
         const response = http.get(
-            apiUrl('/api/v1/admin/users', { page: randomPage(), size: pageSize }),
+            apiUrl('/api/v1/admin/users', { size: pageSize }),
             requestParams(data.adminToken, 'GET /api/v1/admin/users'),
         );
-        recordExact(response, 200, 'admin-users', true);
+        recordCursorPage(response, 200, 'admin-users');
     });
 
     addOperation(operations, 2, 'admin-equipment', Boolean(data.adminToken), () => {
         const response = http.get(
-            apiUrl('/api/v1/admin/equipment', { page: randomPage(), size: pageSize }),
+            apiUrl('/api/v1/admin/equipment', { size: pageSize }),
             requestParams(data.adminToken, 'GET /api/v1/admin/equipment'),
         );
-        recordExact(response, 200, 'admin-equipment', true);
+        recordCursorPage(response, 200, 'admin-equipment');
     });
 
     addOperation(operations, 2, 'admin-reports', Boolean(data.adminToken), () => {
         const response = http.get(
-            apiUrl('/api/v1/admin/reports', { page: randomPage(), size: pageSize }),
+            apiUrl('/api/v1/admin/reports', { size: pageSize }),
             requestParams(data.adminToken, 'GET /api/v1/admin/reports'),
         );
-        recordExact(response, 200, 'admin-reports', true);
+        recordCursorPage(response, 200, 'admin-reports');
     });
 
     addOperation(operations, 2, 'admin-payments', Boolean(data.adminToken), () => {
         const response = http.get(
-            apiUrl('/api/v1/admin/payments', { page: randomPage(), size: pageSize }),
+            apiUrl('/api/v1/admin/payments', { size: pageSize }),
             requestParams(data.adminToken, 'GET /api/v1/admin/payments'),
         );
-        recordExact(response, 200, 'admin-payments', true);
+        recordCursorPage(response, 200, 'admin-payments');
     });
 
     addOperation(operations, 1, 'admin-actions', Boolean(data.adminToken), () => {
         const response = http.get(
-            apiUrl('/api/v1/admin/actions', { page: randomPage(), size: pageSize }),
+            apiUrl('/api/v1/admin/actions', { size: pageSize }),
             requestParams(data.adminToken, 'GET /api/v1/admin/actions'),
         );
-        recordExact(response, 200, 'admin-actions', true);
+        recordCursorPage(response, 200, 'admin-actions');
     });
 
     addOperation(operations, 1, 'admin-user-detail', Boolean(data.adminToken) && userIds.length > 0, () => {

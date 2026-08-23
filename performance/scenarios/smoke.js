@@ -2,7 +2,13 @@ import { group, sleep } from 'k6';
 import http from 'k6/http';
 import { authorizationHeaders, resolveAccessToken } from '../lib/auth.js';
 import { apiUrl, config } from '../lib/config.js';
-import { expectCondition, expectJson, expectPage, expectStatus } from '../lib/checks.js';
+import {
+    expectCondition,
+    expectCursorPage,
+    expectJson,
+    expectPage,
+    expectStatus,
+} from '../lib/checks.js';
 
 export const options = {
     scenarios: {
@@ -235,7 +241,6 @@ export default function (data) {
             };
             const listResponse = http.get(
                 apiUrl('/api/v1/admin/payments', {
-                    page: config.paging.page,
                     size: config.paging.size,
                 }),
                 {
@@ -244,7 +249,7 @@ export default function (data) {
                 },
             );
             expectStatus(listResponse, 200, 'admin payment list');
-            expectPage(listResponse, 'admin payment list');
+            expectCursorPage(listResponse, 'admin payment list');
 
             if (config.ids.paymentId !== null) {
                 const detailResponse = http.get(

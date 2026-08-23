@@ -35,5 +35,8 @@ $env:PAYMENT_ID = "1"
 $env:REPORT_ID = "1"
 $env:USER_ID = "5"
 
+# 관리자 목록의 첫 페이지는 비워 두고, 다음 페이지 기준 측정 시 직전 응답의 nextCursor를 입력합니다.
+$env:ADMIN_CURSOR = ""
+
 $env:K6_PROMETHEUS_RW_SERVER_URL = "http://localhost:9090/api/v1/write"
 $env:K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM = "true"
